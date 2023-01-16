@@ -20,6 +20,3 @@ Commands one can use so far:
 * **G Button (Hold)** + **X Button (Hold)** +  **Right Click (Pressed)** &rarr; Insert a Glider of type X (I do not know the name). <br /> 
 * **G Button (Hold)** + **Y Button (Hold)** +  **Right Click (Pressed)** &rarr; Insert a Glider of type Y (I do not know the name). <br /> <br /> <br /> <br /> 
 
-
-
-[![HitCount](https://hits.dwyl.com/armbrusl/Conways-Game-of-Life.svg?style=flat-square)](http://hits.dwyl.com/armbrusl/Conways-Game-of-Life)
