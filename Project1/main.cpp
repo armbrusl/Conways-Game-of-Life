@@ -1,12 +1,6 @@
 #define OLC_PGE_APPLICATION
 
 #include "olcPixelGameEngine.h"
-#include <vector>
-#include <cmath>
-#include <thread>
-#include <algorithm> 
-#include <random>						// std::default_random_engine
-#include<dos.h>							// for delay()
 
 using namespace std::this_thread;		 // sleep_for, sleep_until
 using namespace std::chrono_literals;	 // ns, us, ms, s, h, etc.
