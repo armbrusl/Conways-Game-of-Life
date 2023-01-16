@@ -2,7 +2,7 @@
 by armbrusl <br />
 16/1/2023 <br /> <br />
 
-I created this project in an effort to create a userfriendly enviroment and learning experience for people who want to learn to use olc::PixelGameEngine. <br /> <br />
+I created this project in an effort to get people interested in olc::PixelGameEngine while also giving them an existing template to work on. <br /> <br />
 
 Commands one can use so far:
 
