@@ -12,15 +12,11 @@ using namespace std::this_thread;		 // sleep_for, sleep_until
 using namespace std::chrono_literals;	 // ns, us, ms, s, h, etc.
 using namespace std;
 
-class LBM : public olc::PixelGameEngine
+class Conway : public olc::PixelGameEngine
 {
 private:
-	const int _s = 200;
-	int c = 0;
-	int G[2][300][300], neighboors = 0, evals = 0;
-	int sleep = 100;
-	const int zoom_window_size = 120;
-	int zoom_amount = 3;
+	int G[2][300][300], neighboors = 0, evals = 0, c = 0, zoom_amount = 3;
+	const int _s = 300, zoom_window_size = 120;
 
 	const int ei[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 	const int ej[8] = { 0, 1, 1, 1, 0, -1, -1, -1};
@@ -41,7 +37,6 @@ public:
 			}
 		}
 	}
-
 	void update()
 	{
 		if (GetKey(olc::Key::U).bHeld)
@@ -51,7 +46,7 @@ public:
 			{
 				for (int j = 0; j < _s; j++)
 				{
-					find_number_of_neighboors(i, j);
+					find_number_of_neighboors(i, j, c);
 
 					if (neighboors == 3 && G[c][i][j] == 0)
 					{
@@ -82,14 +77,41 @@ public:
 			evals++;
 		}
 	}
-
-	void find_number_of_neighboors(int i, int j)
+	void find_number_of_neighboors(int i, int j, int current_grid)
 	{
 		neighboors = 0;
 		for (int k = 0; k < 8; k++)
 		{
-			neighboors += G[c][i + ei[k]][j + ej[k]];
+			neighboors += G[current_grid][i + ei[k]][j + ej[k]];
 		}
+	}
+
+
+	void print_evals(int e)
+	{
+		string sText = std::to_string(e);
+		DrawString(_s + 20, 20, "E=", olc::WHITE, 1);
+		DrawString(_s + 20 + 15, 20, sText, olc::WHITE, 1);
+
+	}
+	void print_neigboors(int i, int j, int current_grid) {
+
+		find_number_of_neighboors(i, j, current_grid);
+
+		string sText = std::to_string(neighboors);
+		DrawString(_s + 20, 40, "N=", olc::WHITE, 1);
+		DrawString(_s + 20 + 15, 40, sText, olc::WHITE, 1);
+	}
+	void print_coordinate(int i, int j, int ox, int oy) {
+		string sText = std::to_string(i);
+		string sText1 = std::to_string(j);
+		string sText2 = std::to_string(zoom_amount);
+
+		DrawString(ox, oy - 10, sText, olc::WHITE, 1);
+		DrawString(ox + 30, oy - 10, sText1, olc::WHITE, 1);
+		DrawString(ox + 60, oy - 10, sText2, olc::WHITE, 1);
+
+
 	}
 
 	void draw()
@@ -102,7 +124,6 @@ public:
 			}
 		}
 	}	
-
 	void reverse_draw() {
 
 		for (int i = 0; i < _s; i++)
@@ -113,16 +134,19 @@ public:
 			}
 		}
 		print_evals(evals-1);
+		int x = int(GetMouseX());
+		int y = int(GetMouseY());
+		zoom_window(x, y, 1-c);
+		print_neigboors(x - 11, y - 11, 1-c);
 	}
-
-	void zoom_window(int x, int y) {
+	void zoom_window(int x, int y, int current_rid) {
 
 		// Where we put the window
 		int ox = _s + 20;
-		int oy = _s - zoom_window_size;
+		int oy = _s - zoom_window_size + 10;
 	
-		if (GetMouseWheel() > 0 && zoom_amount != 6) zoom_amount += 1;
-		if (GetMouseWheel() < 0 && zoom_amount != 3) zoom_amount += -1;
+		if (GetMouseWheel() > 0 && zoom_amount != 6) { zoom_amount += 1; }
+		if (GetMouseWheel() < 0 && zoom_amount != 3) { zoom_amount += -1; }
 
 		//Drawing the outline of the small rectangle
 		DrawRect(ox, oy, zoom_window_size, zoom_window_size, olc::YELLOW);
@@ -137,7 +161,7 @@ public:
 				{
 					for (int h = 0; h < zoom_amount; h++)
 					{
-						(G[c][x + i - 11 + ofs[zoom_amount - 3]][y + j - 11 + ofs[zoom_amount - 3]] == 1) ? Draw(zoom_amount * i + ox + k, zoom_amount * j + oy + h, olc::WHITE) : 0;
+						(G[current_rid][x + i - 11 + ofs[zoom_amount - 3]][y + j - 11 + ofs[zoom_amount - 3]] == 1) ? Draw(zoom_amount * i + ox + k, zoom_amount * j + oy + h, olc::WHITE) : 0;
 
 					}
 				}
@@ -156,58 +180,17 @@ public:
 		print_coordinate(x - 11, y - 11, ox, oy);
 	}
 
-	void manual_grid_change()
-	{
-		int x = int(GetMouseX());
-		int y = int(GetMouseY());
 
-		if (GetKey(olc::Key::I).bPressed) {
-
-			initialize();
-			evals = 0;
-			print_evals(evals);
-		}
-
-		// Show neighboors
-		if (GetMouse(0).bHeld)
-		{
-			Draw(x, y, olc::GREY);
-
-			print_neigboors(x-11, y-11);
-
-
-			zoom_window(x, y);
-
-
-
-			if (GetMouse(1).bHeld || GetMouse(1).bPressed) {
-
-				G[c][x - 11][y - 11] = 1 - G[c][x - 11][y - 11];
-
-			}
-		}
-
-		// Reverse one step
-		if (GetKey(olc::Key::R).bHeld) {
-
-			Clear(olc::BLACK);
-			DrawLine(10, 10, _s + 10, 10, olc::YELLOW);
-			DrawLine(10, _s + 10, _s + 10, _s + 10, olc::YELLOW);
-			DrawLine(_s + 10, 10, _s + 10, _s + 10, olc::YELLOW);
-			DrawLine(10, 10, 10, _s + 10, olc::YELLOW);
-			reverse_draw();
-
-		}
-
+	void add_things(int x, int y) {
 		//Adding a glider type 1
 		if (GetKey(olc::Key::G).bHeld && GetKey(olc::Key::X).bHeld) {
 
 			// Drawing a Glider
 			Draw(x, y, olc::GREY);
-			Draw(x+1, y+1, olc::GREY);
-			Draw(x+1, y+2, olc::GREY);
-			Draw(x, y+2, olc::GREY);
-			Draw(x-1, y+2, olc::GREY);
+			Draw(x + 1, y + 1, olc::GREY);
+			Draw(x + 1, y + 2, olc::GREY);
+			Draw(x, y + 2, olc::GREY);
+			Draw(x - 1, y + 2, olc::GREY);
 
 
 
@@ -217,10 +200,10 @@ public:
 				y = y - 11;
 				// Adding a glider to the grid
 				G[c][x][y] = 1;
-				G[c][x+1][y+1] = 1;
-				G[c][x+1][y+2] = 1;
-				G[c][x][y+2] = 1;
-				G[c][x-1][y+2] = 1;
+				G[c][x + 1][y + 1] = 1;
+				G[c][x + 1][y + 2] = 1;
+				G[c][x][y + 2] = 1;
+				G[c][x - 1][y + 2] = 1;
 
 			}
 
@@ -233,7 +216,7 @@ public:
 
 			// Drawing a Glider 
 			Draw(x, y, olc::GREY);
-			Draw(x, y+2, olc::GREY);
+			Draw(x, y + 2, olc::GREY);
 
 			Draw(x - 1, y + 3, olc::GREY);
 			Draw(x - 2, y + 3, olc::GREY);
@@ -253,7 +236,7 @@ public:
 				y = y - 11;
 				// Adding a glider to the grid
 				G[c][x][y] = 1;
-				G[c][x][y+2] = 1;
+				G[c][x][y + 2] = 1;
 
 				G[c][x - 1][y + 3] = 1;
 				G[c][x - 2][y + 3] = 1;
@@ -284,14 +267,14 @@ public:
 
 			// 1st) glider gun part
 			Draw(x, y, olc::GREY);
-			Draw(x, y-1, olc::GREY);
-			Draw(x+1, y, olc::GREY);
-			Draw(x+1, y-1, olc::GREY);
+			Draw(x, y - 1, olc::GREY);
+			Draw(x + 1, y, olc::GREY);
+			Draw(x + 1, y - 1, olc::GREY);
 
 			// 2nd) glider gun part
 			Draw(x + 10, y, olc::GREY);
-			Draw(x + 10, y-1, olc::GREY);
-			Draw(x + 10, y+1, olc::GREY);
+			Draw(x + 10, y - 1, olc::GREY);
+			Draw(x + 10, y + 1, olc::GREY);
 
 			Draw(x + 11, y - 2, olc::GREY);
 			Draw(x + 11, y + 2, olc::GREY);
@@ -300,7 +283,7 @@ public:
 			Draw(x + 12, y + 3, olc::GREY);
 			Draw(x + 13, y - 3, olc::GREY);
 			Draw(x + 13, y + 3, olc::GREY);
-			
+
 			Draw(x + 14, y, olc::GREY);
 
 			Draw(x + 15, y - 2, olc::GREY);
@@ -316,9 +299,9 @@ public:
 
 			// 3rd) glider gun part
 
-			Draw(x + 20, y-1, olc::GREY);
-			Draw(x + 20, y-2, olc::GREY);
-			Draw(x + 20, y-3, olc::GREY);
+			Draw(x + 20, y - 1, olc::GREY);
+			Draw(x + 20, y - 2, olc::GREY);
+			Draw(x + 20, y - 3, olc::GREY);
 			Draw(x + 21, y - 1, olc::GREY);
 			Draw(x + 21, y - 2, olc::GREY);
 			Draw(x + 21, y - 3, olc::GREY);
@@ -334,7 +317,7 @@ public:
 
 			Draw(x + 34, y - 2, olc::GREY);
 			Draw(x + 34, y - 3, olc::GREY);
-			Draw(x + 35, y -2 , olc::GREY);
+			Draw(x + 35, y - 2, olc::GREY);
 			Draw(x + 35, y - 3, olc::GREY);
 
 
@@ -345,9 +328,9 @@ public:
 
 				// 1st) glider gun part
 				G[c][x][y] = 1;
-				G[c][x][y-1] = 1;
-				G[c][x+1][y] = 1;
-				G[c][x+1][y-1] = 1;
+				G[c][x][y - 1] = 1;
+				G[c][x + 1][y] = 1;
+				G[c][x + 1][y - 1] = 1;
 
 				// 2nd) glider gun part
 				G[c][x + 10][y] = 1;
@@ -408,41 +391,48 @@ public:
 
 
 		}
-
-
-
 	}
-
-	void print_evals(int e)
+	void manual_grid_change()
 	{
-		string sText = std::to_string(e);
-		DrawString(_s + 20, 20, "E=", olc::WHITE, 1);
-		DrawString(_s + 20 + 15, 20, sText, olc::WHITE, 1);
+		int x = int(GetMouseX());
+		int y = int(GetMouseY());
+
+		if (GetKey(olc::Key::I).bPressed) {
+
+			initialize();
+			evals = 0;
+			print_evals(evals);
+		}
+
+		// Show neighboors
+		if (GetMouse(0).bHeld)
+		{
+			Draw(x, y, olc::GREY);
+			print_neigboors(x-11, y-11, c);
+			zoom_window(x, y, c);
+
+			if (GetMouse(1).bHeld) {
+				G[c][x - 11][y - 11] = 1;
+			}
+		}
+
+		// Reverse one step
+		if (GetKey(olc::Key::R).bHeld) {
+
+			Clear(olc::BLACK);
+			DrawLine(10, 10, _s + 10, 10, olc::YELLOW);
+			DrawLine(10, _s + 10, _s + 10, _s + 10, olc::YELLOW);
+			DrawLine(_s + 10, 10, _s + 10, _s + 10, olc::YELLOW);
+			DrawLine(10, 10, 10, _s + 10, olc::YELLOW);
+			reverse_draw();
+
+		}
+
+
+		// Adding things like glider guns, guns, etc...
+		add_things(x, y);
 
 	}
-
-	void print_neigboors(int i, int j) {
-
-		find_number_of_neighboors(i, j);
-
-		string sText = std::to_string(neighboors);
-		DrawString(_s + 20, 40, "N=", olc::WHITE, 1);
-		DrawString(_s + 20 + 15, 40, sText, olc::WHITE, 1);
-	}
-
-	void print_coordinate(int i, int j, int ox, int oy) {
-		string sText = std::to_string(i);
-		string sText1 = std::to_string(j);
-		string sText2 = std::to_string(zoom_amount);
-
-		DrawString(ox, oy - 10, sText, olc::WHITE, 1);
-		DrawString(ox + 30, oy - 10, sText1, olc::WHITE, 1);
-		DrawString(ox + 60, oy - 10, sText2, olc::WHITE, 1);
-
-
-	}
-
-
 
 
 	bool OnUserCreate() override
@@ -450,7 +440,6 @@ public:
 		initialize();
 		return true;
 	}
-
 	bool OnUserUpdate(float fElapsedTime) override
 	{
 		
@@ -469,8 +458,8 @@ public:
 
 int main()
 {
-	LBM demo;
-	if (demo.Construct(400, 220, 4, 4))
+	Conway demo;
+	if (demo.Construct(470, 320, 2, 2))
 		demo.Start();
 	return 0;
 }
