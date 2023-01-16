@@ -1,5 +1,5 @@
 # Conways Game of Life
-# by armbrusl
-# 16/1/2023
+by armbrusl
+16/1/2023
 
 
