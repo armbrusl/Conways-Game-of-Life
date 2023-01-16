@@ -1,6 +1,6 @@
 # Conways Game of Life
 
-In order for this code to work add the header file found at https://github.com/OneLoneCoder/olcPixelGameEngine.
+In order for this code to work add the header file (olcPixelGameEngine.h) found at https://github.com/OneLoneCoder/olcPixelGameEngine.
 <br /> <br />
 I created this project in an effort to get people interested in olc::PixelGameEngine while also giving them an existing template to work on. <br /> <br />
 
