@@ -23,4 +23,3 @@ Commands one can use so far:
 
 
 [![HitCount](https://hits.dwyl.com/armbrusl/Conways-Game-of-Life.svg?style=flat-square)](http://hits.dwyl.com/armbrusl/Conways-Game-of-Life)
-[![HitCount](https://hits.dwyl.com/armbrusl/Conways-Game-of-Life.svg?style=flat-square&show=unique)](http://hits.dwyl.com/armbrusl/Conways-Game-of-Life)
